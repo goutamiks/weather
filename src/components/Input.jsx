@@ -1,22 +1,46 @@
-import React from "react";
+import React, { useState } from "react";
 import { useWeather } from "./Weather";
-const Input = () => {
-    const weather = useWeather();
-    
-const { setCity } = useWeather();
 
-<input
-  type="text"
-  onChange={(e) => setCity(e.target.value)}   // ✅ use setCity
-/>
+const Input = () => {
+  const { getWeather, loading } = useWeather();
+  const [cityName, setCityName] = useState("");
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (cityName.trim()) {
+      await getWeather(cityName.trim());
+    }
+  };
+
+  const handleInputChange = (e) => {
+    setCityName(e.target.value);
+  };
 
   return (
-    <input
-      className="input-field"
-      placeholder="Search here"
-      value={weather.searchCity}
-      onChange={(e) => weather.setSearchCity(e.target.value)}
-    />
+    <form onSubmit={handleSubmit} className="search-form">
+      <div className="input-group">
+        <input
+          type="text"
+          className="input-field"
+          placeholder="Search any city..."
+          value={cityName}
+          onChange={handleInputChange}
+          disabled={loading}
+        />
+        <button 
+          type="submit" 
+          className="search-button"
+          disabled={loading || !cityName.trim()}
+          title="Get Weather"
+        >
+          {loading ? (
+            <span className="loading-spinner">⏳</span>
+          ) : (
+            <span>🔍</span>
+          )}
+        </button>
+      </div>
+    </form>
   );
 };
 

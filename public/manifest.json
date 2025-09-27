@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "Weather Now",
+  "name": "Weather Now - Current Weather Conditions",
   "icons": [
     {
       "src": "favicon.ico",
@@ -20,6 +20,7 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "theme_color": "#667eea",
+  "background_color": "#764ba2",
+  "description": "Get current weather conditions for any city worldwide. Perfect for outdoor enthusiasts and adventurers."
 }
