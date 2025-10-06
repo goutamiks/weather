@@ -2,7 +2,7 @@ import React from "react";
 import { useWeather } from "./Weather";
 
 const Card = () => {
-  const { weather, city, loading, error } = useWeather();
+  const { weather, city, loading, error, forecast } = useWeather();
 
   if (loading) {
     return (
@@ -135,6 +135,31 @@ const Card = () => {
           Last updated: {new Date().toLocaleTimeString()}
         </p>
       </div>
+
+      {/* 5-Day Forecast */}
+      {forecast && forecast.length > 0 && (
+        <div className="forecast-container">
+          <h3 className="forecast-title">Next 5 Days</h3>
+          <div className="forecast-grid">
+            {forecast.map((day) => {
+              const dateObj = new Date(day.date);
+              const weekday = dateObj.toLocaleDateString(undefined, { weekday: 'short' });
+              const monthDay = dateObj.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+              return (
+                <div className="forecast-item" key={day.date}>
+                  <div className="forecast-day">{weekday}</div>
+                  <div className="forecast-date">{monthDay}</div>
+                  <div className="forecast-icon">{getWeatherIcon(day.weathercode)}</div>
+                  <div className="forecast-temps">
+                    <span className="temp-max">{Math.round(day.tempMax)}°</span>
+                    <span className="temp-min">{Math.round(day.tempMin)}°</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

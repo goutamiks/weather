@@ -7,9 +7,12 @@ const Input = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (cityName.trim()) {
+    if (!cityName.trim()) return;
+    try {
       await getWeather(cityName.trim());
-    }
+      // persist the raw query for next time
+      localStorage.setItem("lastCityQuery", cityName.trim());
+    } catch (_) {}
   };
 
   const handleInputChange = (e) => {

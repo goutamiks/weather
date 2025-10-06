@@ -7,6 +7,7 @@ export const WeatherProvider = ({ children }) => {
   const [weather, setWeather] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [forecast, setForecast] = useState([]);
 
   const getWeather = async (cityName) => {
     try {
@@ -41,8 +42,13 @@ export const WeatherProvider = ({ children }) => {
       const fullCityName = `${name}${admin1 ? `, ${admin1}` : ''}, ${country}`;
       setCity(fullCityName);
 
-      // Step 2: Get weather data using Open-Meteo Weather API
-      const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&temperature_unit=celsius&windspeed_unit=kmh&precipitation_unit=mm`;
+      // Persist last searched city (original query string for future searches)
+      try {
+        localStorage.setItem("lastCityQuery", cityName.trim());
+      } catch (_) {}
+
+      // Step 2: Get weather data using Open-Meteo Weather API (current + 5-day daily)
+      const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true&temperature_unit=celsius&windspeed_unit=kmh&precipitation_unit=mm&daily=weathercode,temperature_2m_max,temperature_2m_min`;
       
       const weatherResponse = await fetch(weatherUrl);
       if (!weatherResponse.ok) {
@@ -56,14 +62,33 @@ export const WeatherProvider = ({ children }) => {
       }
 
       setWeather(weatherData.current_weather);
+
+      // Build 5-day forecast from daily data if present
+      if (weatherData.daily && Array.isArray(weatherData.daily.time)) {
+        const days = weatherData.daily.time
+          .map((dateString, index) => ({
+            date: dateString,
+            weathercode: weatherData.daily.weathercode?.[index],
+            tempMax: weatherData.daily.temperature_2m_max?.[index],
+            tempMin: weatherData.daily.temperature_2m_min?.[index],
+          }))
+          .slice(0, 5);
+        setForecast(days);
+      } else {
+        setForecast([]);
+      }
     } catch (err) {
       console.error("Weather fetch error:", err);
       setError(err.message || "Failed to fetch weather data. Please try again.");
       setWeather(null);
+      setForecast([]);
     } finally {
       setLoading(false);
     }
   };
+
+  // Note: We intentionally do not auto-fetch on mount to avoid errors when
+  // a saved string is not directly resolvable by the geocoding API.
 
   return (
     <WeatherContext.Provider
@@ -74,11 +99,13 @@ export const WeatherProvider = ({ children }) => {
         loading, 
         error, 
         getWeather,
+        forecast,
         clearError: () => setError(null),
         clearWeather: () => {
           setWeather(null);
           setCity("");
           setError(null);
+          setForecast([]);
         }
       }}
     >
